@@ -5,6 +5,7 @@ import fs from "fs";
 import tar from "tar-fs";
 import { fileURLToPath } from "url";
 import uploadCode from "./utils/uploadCode.js";
+import execute from "./utils/execute.js";
 
 const executeCode = async (req: Request, res: Response) => {
   const { code } = req.body;
@@ -15,40 +16,15 @@ const executeCode = async (req: Request, res: Response) => {
   try {
     // upload the code temporarily to server
     const filePath = uploadCode(code);
+
     // spin off docker container
-    const container = await docker.createContainer({
-      Image: imageName,
-      Tty: true,
-    });
-    await container.start();
+    const output = await execute(imageName, filePath);
 
-    const tarStream = tar.pack(path.dirname(filePath), {
-      entries: [path.basename(filePath)],
-    });
-    await container.putArchive(tarStream, { path: "/app/" });
+    console.log(output);
 
-    const exec = await container.exec({
-      Cmd: ["bash", "-c", `g++ /app/test.cpp -o /app/output && /app/output`],
-      AttachStdout: true,
-      AttachStderr: true,
-    });
-
-    const execStream = await exec.start({});
-    let output = "";
-
-    execStream.on("data", (data) => {
-      output += data.toString();
-    });
-
-    execStream.on("end", async () => {
-      // Cleanup: Remove the container and temporary file
-      await container.stop();
-      await container.remove();
-      fs.unlinkSync(filePath);
-      
-      // Send back the execution output
-      res.status(200).json({ success: true, message: output });
-    });
+    res
+      .status(200)
+      .json({ success: true, message: "code execution successfull", output });
   } catch (err) {
     res.status(500).json({ success: false, message: err });
   }
