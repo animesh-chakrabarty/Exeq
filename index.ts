@@ -1,11 +1,10 @@
-import express, { Request, Response } from 'express';
+import express from "express";
+import router from "./src/routes.js";
 
+const port = process.env.PORT || 8000;
 const app = express();
-const port = 3000;
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello from TypeScript and Express!');
-});
+app.use("/api", router);
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
