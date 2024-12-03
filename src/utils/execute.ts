@@ -29,7 +29,7 @@ const execute = async (imageName: string, filePath: string): Promise<string> => 
       let output = "";
 
       execStream.on("data", (data) => {
-        output += data.toString();
+        output +=  data.toString().replace(/[^\x20-\x7E]/g, "");
       });
 
       execStream.on("end", async () => {
@@ -38,7 +38,6 @@ const execute = async (imageName: string, filePath: string): Promise<string> => 
         await container.remove();
         fs.unlinkSync(filePath);
 
-        console.log("log inside execute: " + output);
         resolve(output); // Resolve the promise with the output
       });
 

@@ -20,8 +20,6 @@ const executeCode = async (req: Request, res: Response) => {
     // spin off docker container
     const output = await execute(imageName, filePath);
 
-    console.log(output);
-
     res
       .status(200)
       .json({ success: true, message: "code execution successfull", output });
