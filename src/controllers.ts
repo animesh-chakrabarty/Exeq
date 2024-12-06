@@ -28,8 +28,12 @@ const executeCode = async (req: Request, res: Response) => {
   }
 };
 
-const checkExecutionStatus = async (req: Request, res: Response) => {
-  res.status(200).json({ success: true, message: "Hii check route" });
+const healthCheck = async (req: Request, res: Response) => {
+  res.status(200).json({ success: true, message: "Server is working fine" });
 };
 
-export const controllers = { executeCode, checkExecutionStatus };
+// const checkExecutionStatus = async (req: Request, res: Response) => {
+//   res.status(200).json({ success: true, message: "Hii check route" });
+// };
+
+export const controllers = { executeCode, healthCheck };
