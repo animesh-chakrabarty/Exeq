@@ -9,7 +9,7 @@ import execute from "./utils/execute.js";
 
 const executeCode = async (req: Request, res: Response) => {
   const { code } = req.body;
-  const docker = new Docker({ host: "127.0.0.1", port: 2375 });
+  const docker = new Docker({ socketPath: "/var/run/docker.sock" });
 
   const imageName = "exeq-cpp";
 

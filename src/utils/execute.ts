@@ -4,7 +4,7 @@ import fs from "fs";
 import tar from "tar-fs";
 
 const execute = async (imageName: string, filePath: string): Promise<string> => {
-  const docker = new Docker({ host: "127.0.0.1", port: 2375 });
+  const docker = new Docker({socketPath: '/var/run/docker.sock'});
 
   const container = await docker.createContainer({
     Image: imageName,
