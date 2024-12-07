@@ -1,24 +1,21 @@
 import { Request, Response } from "express";
-import Docker from "dockerode";
-import path from "path";
-import fs from "fs";
-import tar from "tar-fs";
-import { fileURLToPath } from "url";
 import uploadCode from "./utils/uploadCode.js";
 import execute from "./utils/execute.js";
+import uploadInput from "./utils/uploadInput.js";
 
 const executeCode = async (req: Request, res: Response) => {
-  const { code } = req.body;
-  const docker = new Docker({ socketPath: "/var/run/docker.sock" });
-
+  const { code, input } = req.body;
   const imageName = "exeq-cpp";
 
   try {
-    // upload the code temporarily to server
-    const filePath = uploadCode(code);
+    // Upload the code temporarily to server
+    const codeFilePath = uploadCode(code);
 
-    // spin off docker container
-    const output = await execute(imageName, filePath);
+    // Upload the inputs temporarily to server
+    const inputFilePath = uploadInput(input);
+
+    // Execute code
+    const output = await execute(imageName, codeFilePath, inputFilePath);
 
     res
       .status(200)
@@ -29,11 +26,7 @@ const executeCode = async (req: Request, res: Response) => {
 };
 
 const healthCheck = async (req: Request, res: Response) => {
-  res.status(200).json({ success: true, message: "Server is working fine" });
+  res.status(200).json({ success: true, message: "Server is up & running" });
 };
-
-// const checkExecutionStatus = async (req: Request, res: Response) => {
-//   res.status(200).json({ success: true, message: "Hii check route" });
-// };
 
 export const controllers = { executeCode, healthCheck };
