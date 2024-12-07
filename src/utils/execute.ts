@@ -36,6 +36,7 @@ const execute = async (imageName: string, codeFilePath: string, inputFilePath: s
         await container.stop();
         await container.remove();
         fs.unlinkSync(codeFilePath);
+        fs.unlinkSync(inputFilePath);
         resolve(output); 
       });
 
