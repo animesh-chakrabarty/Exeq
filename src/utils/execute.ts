@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import tar from "tar-fs";
 
-const execute = async (imageName: string, filePath: string): Promise<string> => {
+const execute = async (imageName: string, codeFilePath: string, inputFilePath: string): Promise<string> => {
   const docker = new Docker({socketPath: '/var/run/docker.sock'});
 
   const container = await docker.createContainer({
@@ -12,13 +12,13 @@ const execute = async (imageName: string, filePath: string): Promise<string> => 
   });
   await container.start();
 
-  const tarStream = tar.pack(path.dirname(filePath), {
-    entries: [path.basename(filePath)],
+  const tarStream = tar.pack(path.dirname(codeFilePath), {
+    entries: [path.basename(codeFilePath), path.basename(inputFilePath)],
   });
   await container.putArchive(tarStream, { path: "/app/" });
 
   const exec = await container.exec({
-    Cmd: ["bash", "-c", `g++ /app/test.cpp -o /app/output && /app/output`],
+    Cmd: ["bash", "-c", `g++ /app/test.cpp -o /app/output && /app/output < /app/test.input`],
     AttachStdout: true,
     AttachStderr: true,
   });
@@ -29,23 +29,20 @@ const execute = async (imageName: string, filePath: string): Promise<string> => 
       let output = "";
 
       execStream.on("data", (data) => {
-        output +=  data.toString().replace(/[^\x20-\x7E]/g, "");
+        output +=  data.toString();
       });
 
       execStream.on("end", async () => {
-        // Cleanup: Remove the container and temporary file
         await container.stop();
         await container.remove();
-        fs.unlinkSync(filePath);
-
-        resolve(output); // Resolve the promise with the output
+        fs.unlinkSync(codeFilePath);
+        resolve(output); 
       });
 
       execStream.on("error", (err) => {
-        reject(err); // Reject the promise if an error occurs
+        reject(err); 
       });
     } catch (err) {
-      // Handle any errors in the promise
       reject(err);
     }
   });
